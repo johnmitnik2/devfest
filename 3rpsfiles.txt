@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         Debug.Log("we got this far!");
-        rockButton.onClick.AddListener(() => Pl])),,;
+        rockButton.onClick.AddListener(() => PlayerChoice(Choice.Rock));
         paperButton.onClick.AddListener(() => PlayerChoice(Choice.Paper));
         scissorsButton.onClick.AddListener(() => PlayerChoice(Choice.Scissors));
     }
