@@ -1,0 +1,89 @@
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class GameManager : MonoBehaviour
+{
+    public enum Choice { Rock, Paper, Scissors }
+
+    [SerializeField] private TextMeshProUGUI resultText;
+    [SerializeField] private Button rockButton, paperButton, scissorsButton;
+    [SerializeField] private UIManager ui;
+
+    private int playerScore = 0;
+    private int aiScore = 0;
+
+    void Start()
+    {
+        Debug.Log("we got this far!");
+        rockButton.onClick.AddListener(() => Pl])),,;
+        paperButton.onClick.AddListener(() => PlayerChoice(Choice.Paper));
+        scissorsButton.onClick.AddListener(() => PlayerChoice(Choice.Scissors));
+    }
+
+    public void PlayerChoice(Choice playerChoice)
+    {
+        Choice aiChoice = GetAIChoice();
+        string result = DetermineWinner(playerChoice, aiChoice);
+        resultText.text = result;
+    }
+
+    Choice GetAIChoice()
+    {
+        return (Choice)Random.Range(0, 3); // Random AI choice
+    }
+
+    string DetermineWinner(Choice playerChoice, Choice aiChoice)
+    {
+        if (playerChoice == aiChoice)
+            return "It's a tie!";
+        
+        if ((playerChoice == Choice.Rock && aiChoice == Choice.Scissors) ||
+            (playerChoice == Choice.Paper && aiChoice == Choice.Rock) ||
+            (playerChoice == Choice.Scissors && aiChoice == Choice.Paper))
+        {
+            playerScore++;
+            ui.UpdateScore(playerScore, aiScore);
+            return "You Win!";
+        }
+        else
+        {
+            aiScore++;
+            ui.UpdateScore(playerScore, aiScore);
+            return "AI Wins!";
+        }
+    }
+}
+
+
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+public class UIManager : MonoBehaviour {
+
+void Start() {
+    Debug.Log("UI Manager is ethereal");
+}
+
+    [SerializeField] private TextMeshProUGUI playerScoreText;
+    [SerializeField] private TextMeshProUGUI aiScoreText;
+    [SerializeField] private TextMeshProUGUI currentResultText;
+
+    public void UpdateScore(int playerScore, int aiScore)
+    {
+        playerScoreText.text = $"Player: {playerScore}";
+        aiScoreText.text = $"AI: {aiScore}";
+    }
+}
+
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class ButtonManager : MonoBehaviour
+{
+    [SerializeField] private GameManager gameManager;
+    public void OnRockButtonClicked() => gameManager.PlayerChoice(GameManager.Choice.Rock);
+    public void OnPaperButtonClicked() => gameManager.PlayerChoice(GameManager.Choice.Paper);
+    public void OnScissorsButtonClicked() => gameManager.PlayerChoice(GameManager.Choice.Scissors);
+}
