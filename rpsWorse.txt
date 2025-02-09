@@ -1,0 +1,98 @@
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class GameManager : MonoBehaviour
+{
+    public enum Choice { Rock, Paper, Scissors }
+
+    [SerializeField] private TextMeshProUGUI resultText;
+    [SerializeField] private Button rockButton, paperButton, scissorsButton;
+
+    [SerializeField] private TextMeshProUGUI playerScoreText;
+    [SerializeField] private TextMeshProUGUI aiScoreText;
+    
+
+    private int playerScore = 0;
+    private int aiScore = 0;
+    private bool activeRigging = false;
+
+    void Start()
+    {
+        Debug.Log("we got this far!");
+
+
+
+        rockButton.onClick.AddListener(() => PlayerChoice(Choice.Rock));
+        paperButton.onClick.AddListener(() => PlayerChoice(Choice.Paper));
+        scissorsButton.onClick.AddListener(() => PlayerChoice(Choice.Scissors));
+    }
+
+    public void PlayerChoice(Choice playerChoice)
+    {
+        Choice aiChoice = GetAIChoice(playerChoice, activeRigging);
+        string result = DetermineWinner(playerChoice, aiChoice);
+        resultText.text = result;
+    }
+
+    Choice CounterPick(Choice otherChoice)
+    {
+        Choice bucket;
+        if(otherChoice==Choice.Rock)
+        {
+            bucket = Choice.Paper;
+        }
+        else if(otherChoice==Choice.Paper)
+        {
+            bucket==Choice.Scissors;
+        }
+        else //guaranteed to be Scissors
+        {
+            bucket==Choice.Rock;
+        }
+        return bucket;
+
+    }
+
+    
+
+    Choice GetAIChoice(Choice playerChoice, bool blatantRigging)
+    {
+        Choice aiChoice;
+        if(blatantRigging)
+        {
+            aiChoice = CounterPick(playerChoice);
+        }
+        else
+        {
+            Choice aiChoice = (Choice)Random.Range(0, 3); // Random AI choice
+        }
+        return aiChoice;
+    }
+
+    string DetermineWinner(Choice playerChoice, Choice aiChoice)
+    {
+        if (playerChoice == aiChoice)
+            return "It's a tie!";
+        
+        if ((playerChoice == Choice.Rock && aiChoice == Choice.Scissors) ||
+            (playerChoice == Choice.Paper && aiChoice == Choice.Rock) ||
+            (playerChoice == Choice.Scissors && aiChoice == Choice.Paper))
+        {
+            playerScore++;
+            UpdateScore();
+            return "You Win!";
+        }
+        else
+        {
+            aiScore++;
+            UpdateScore();
+            return "AI Wins!";
+        }
+    }
+    public void UpdateScore()
+    {
+        playerScoreText.text = $"Player: {playerScore}";
+        aiScoreText.text = $"AI: {aiScore}";
+    }
+}
