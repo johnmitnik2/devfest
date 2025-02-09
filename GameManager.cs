@@ -11,10 +11,13 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI resultText;
     [SerializeField] private Button rockButton, paperButton, scissorsButton;
-    [SerializeField] private UIManager ui;
+    [SerializeField] private TextMeshProUGUI playerScoreText;
+    [SerializeField] private TextMeshProUGUI aiScoreText;
+    //[SerializeField] private UIManager ui;
 
     private int playerScore = 0;
     private int aiScore = 0;
+    private bool activeRigging = false;
 
     void Start()
     {
@@ -36,7 +39,7 @@ public class GameManager : MonoBehaviour
         
         Debug.Log("Player chose " + choiceName);
         // Generate AI's choice
-        Choice aiChoice = GetAIChoice();
+        Choice aiChoice = GetAIChoice(playerChoice, activeRigging);
         
         Debug.Log("AI chose " + aiChoice.ToString());
         // Determine the result of the game
@@ -46,6 +49,24 @@ public class GameManager : MonoBehaviour
         //resultText.text = result;
         HandleResult(result);
 
+    }
+
+    private Choice CounterPick(Choice otherChoice)
+    {
+        Choice bucket;
+        if(otherChoice==Choice.Rock)
+        {
+            bucket = Choice.Paper;
+        }
+        else if(otherChoice==Choice.Paper)
+        {
+            bucket==Choice.Scissors;
+        }
+        else //guaranteed to be Scissors
+        {
+            bucket==Choice.Rock;
+        }
+        return bucket;
     }
 
     // This method handles the outcome of the player's choice
@@ -68,18 +89,27 @@ public class GameManager : MonoBehaviour
                 break;
         }
         Choice playerChoice = (Choice)Enum.Parse(typeof(Choice), objectName);
-        Choice aiChoice = GetAIChoice();
+        Choice aiChoice = GetAIChoice(playerChoice, activeRigging);
         string result = DetermineWinner(playerChoice, aiChoice);
         
         // Display the result
         HandleResult(result);
-        //resultText.text = result;
+        resultText.text = result;
     }
 
     // Randomly determines the AI's choice
-    Choice GetAIChoice()
+    Choice GetAIChoice(Choice playerChoice, bool blatantRigging)
     {
-        return (Choice)UnityEngine.Random.Range(0, 3); // Random AI choice
+        Choice aiChoice;
+        if(blatantRigging)
+        {
+            aiChoice = CounterPick(playerChoice);
+        }
+        else
+        {
+            Choice aiChoice = (Choice)Random.Range(0, 3); // Random AI choice
+        }
+        return aiChoice;
     }
 
     // Determines the winner of the game
@@ -93,13 +123,13 @@ public class GameManager : MonoBehaviour
             (playerChoice == Choice.Scissors && aiChoice == Choice.Paper))
         {
             playerScore++;
-            ui.UpdateScore(playerScore, aiScore);  // Update score UI
+            UpdateScore();  // Update score UI
             return "You Win!";
         }
         else
         {
             aiScore++;
-            ui.UpdateScore(playerScore, aiScore);  // Update score UI
+            UpdateScore();  // Update score UI
             return "AI Wins!";
         }
     }
@@ -133,5 +163,11 @@ public class GameManager : MonoBehaviour
     resultText.alpha = 0;
     resultText.text = "";
 }
+    public void UpdateScore() //this removes the need for UIManager
+    {
+        playerScoreText.text = $"Player: {playerScore}";
+        aiScoreText.text = $"AI: {aiScore}";
+    }
+
 
 }
