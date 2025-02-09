@@ -52,13 +52,13 @@ public class GameManager : MonoBehaviour
             else if(gameSeed < 51)
                 intentionArray = {0,1,1,1,1,1,2,2,2,2}; //'forfeit'
             else if(gameSeed < 61)
-                intentionArray = {1,0,0,2,0,0,0,0,0,1} //''
+                intentionArray = {1,0,0,2,0,0,0,0,0,1}; //''
             else if(gameSeed < 63)
-                intentionArray = {0,0,0,0,0,0,0,0,0,1} //'friend_maker'
+                intentionArray = {0,0,0,0,0,0,0,0,0,1}; //'friend_maker'
             else if(gameSeed < 65)
-                intentionArray = {0,0,0,0,0,0,0,0,0,0} //'FORCE_TIE'
+                intentionArray = {0,0,0,0,0,0,0,0,0,0}; //'FORCE_TIE'
             else if(gameSeed < 67)
-                intentionArray = {2,2,2,2,2,2,2,2,2,2} //'report player'
+                intentionArray = {2,2,2,2,2,2,2,2,2,2}; //'report player'
         }
         
         //so overall:
