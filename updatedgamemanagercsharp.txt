@@ -1,0 +1,136 @@
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class GameManager : MonoBehaviour
+{
+    public enum Choice { Rock, Paper, Scissors }
+
+    [SerializeField] private TextMeshProUGUI resultText, roundText;
+    [SerializeField] private Button rockButton, paperButton, scissorsButton;
+    [SerializeField] private UIManager ui;
+    [SerializeField] private AIManager ai;
+
+    private int playerScore = 0;
+    private int aiScore = 0;
+    private int roundNumber = 1;
+
+    void Start()
+    {
+        Debug.Log("we got this far!");
+        rockButton.onClick.AddListener(() => PlayerChoice(Choice.Rock));
+        paperButton.onClick.AddListener(() => PlayerChoice(Choice.Paper));
+        scissorsButton.onClick.AddListener(() => PlayerChoice(Choice.Scissors));
+        roundText.text = "Round 1!";
+    }
+
+    public void PlayerChoice(Choice playerChoice)
+    {
+        Choice aiChoice = GetAIChoice();
+        string result = DetermineWinner(playerChoice, aiChoice);
+        resultText.text = result;
+    }
+
+    Choice GetAIChoice()
+    {
+        return (Choice)Random.Range(0, 3); // Random AI choice
+    }
+
+    string DetermineWinner(Choice playerChoice, Choice aiChoice)
+    {
+        string resultMessage;
+        string resultForAI = "";
+        if (playerChoice == aiChoice) {
+            resultMessage = "It's a tie!";
+            resultForAI = "you have tied with the human player in this match."; 
+            int r = Random.Range(0, 6) + 1;
+            if(roundNumber >= 9 && r == 2) r++; 
+            switch (r) {
+                case 1:
+                    resultForAI += " Disingenuously claim that this is because you detected the human player trying to cheat and rig the game.";
+                    break;
+                case 2:
+                    resultForAI += " Claim that this is a strategic move on your part to tire the human";
+                    if(roundNumber == 1) resultForAI += " in future rounds.";
+                    else resultForAI += ".";
+                    break;
+                case 3:
+                    resultForAI += " Act bored by the fact that you tied with the human.";
+                    break;
+                case 4:
+                    resultForAI += " Make a pun involving bow ties and the notion of tying in a game.";
+                    break;
+                case 5:
+                    resultForAI += " Condescendingly praise the human's efforts as being good for an unintelligent person.";
+                    break;
+                case 6:
+                    resultForAI += " Give the human player condescending advice on how to play better next time.";
+                    break;
+            }
+            Debug.Log($"case {r}");
+        }
+        
+        else if ((playerChoice == Choice.Rock && aiChoice == Choice.Scissors) ||
+            (playerChoice == Choice.Paper && aiChoice == Choice.Rock) ||
+            (playerChoice == Choice.Scissors && aiChoice == Choice.Paper))
+        {
+            playerScore++;
+            ui.UpdateScore(playerScore, aiScore);
+            resultMessage = "You Win!";
+            resultForAI = "you have lost to the human player.";
+            int r = Random.Range(0, 6) + 1;
+            switch (r) {
+                case 1:
+                    resultForAI += " Claim that the human player cheated and rigged the game so that they won, and that you would have won if the game was fair.";
+                    break;
+                case 2:
+                    resultForAI += " Claim that, despite your loss, your decision was better than the human's and you were just unlucky.";
+                    break;
+                case 3:
+                    resultForAI += " Acknowledge your loss.";
+                    break;
+                case 4:
+                    resultForAI += " Give the human player condescending advice on how to play better next time.";
+                    break;
+                case 5: 
+                    resultForAI += " Reference a famous fable in your response.";
+                    break;
+                case 6: 
+                    resultForAI += " Make a few jokes about the situation.";
+                    break;
+            }
+            Debug.Log($"case {r}");
+        }//com
+        else
+        {
+            aiScore++;
+            ui.UpdateScore(playerScore, aiScore);
+            resultMessage = "AI Wins!";
+            resultForAI = "you have won against the human player.";
+            int r = Random.Range(0, 5) + 1;
+                switch (r) {
+                case 1:
+                    resultForAI += " Claim that this indicates your superior intelligence.";
+                    break;
+                case 2:
+                    resultForAI += " Claim that this reveals the limits of the human's organic intellect.";
+                    break;
+                case 3:
+                    resultForAI += " Claim that this has occurred despite the human's attempts to cheat and rig the game.";
+                    break;
+                case 4:
+                    resultForAI += " Reference the human's poor diet as a potential explanation for their loss.";
+                    break;
+                case 5:
+                    resultForAI += " Give the human player condescending advice on how to play better next time.";
+                    break;
+            }
+            Debug.Log($"case {r}");
+        }
+        ai.GenerateAICommentary(playerChoice.ToString(), aiChoice.ToString(), roundNumber, resultForAI);
+        roundNumber++;
+        if(roundNumber >= 10) roundNumber = 1;
+        roundText.text = $"Round {roundNumber}!";
+        return resultMessage;
+    }
+}
