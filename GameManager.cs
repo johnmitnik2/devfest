@@ -18,6 +18,8 @@ public class GameManager : MonoBehaviour
     private int playerScore = 0;
     private int aiScore = 0;
     private bool activeRigging = false;
+    private int aiIntention = 0;
+    //if rigging is on, aiIntention: 0 => tie, 1 => win, 2 => throw
 
     void Start()
     {
@@ -39,7 +41,7 @@ public class GameManager : MonoBehaviour
         
         Debug.Log("Player chose " + choiceName);
         // Generate AI's choice
-        Choice aiChoice = GetAIChoice(playerChoice, activeRigging);
+        Choice aiChoice = GetAIChoice(playerChoice);
         
         Debug.Log("AI chose " + aiChoice.ToString());
         // Determine the result of the game
@@ -51,20 +53,24 @@ public class GameManager : MonoBehaviour
 
     }
 
-    private Choice CounterPick(Choice otherChoice)
+    private Choice CounterPick(Choice otherChoice, int intention)
     {
+        //apologies for making an int keyword, but that is easiest
+        //intention should be set to 0 for "tie", 1 for "win", 2 for "throw"
+        
+        //note that for Choice, 0 casts to Rock, 1 to paper, 2 to sciss
         Choice bucket;
         if(otherChoice==Choice.Rock)
         {
-            bucket = Choice.Paper;
+            bucket = (Choice)((0 + intention) % 3);
         }
         else if(otherChoice==Choice.Paper)
         {
-            bucket==Choice.Scissors;
+            bucket = (Choice)((1 + intention) % 3);
         }
         else //guaranteed to be Scissors
         {
-            bucket==Choice.Rock;
+            bucket = (Choice)((2 + intention) % 3);
         }
         return bucket;
     }
@@ -89,7 +95,7 @@ public class GameManager : MonoBehaviour
                 break;
         }
         Choice playerChoice = (Choice)Enum.Parse(typeof(Choice), objectName);
-        Choice aiChoice = GetAIChoice(playerChoice, activeRigging);
+        Choice aiChoice = GetAIChoice(playerChoice);
         string result = DetermineWinner(playerChoice, aiChoice);
         
         // Display the result
@@ -98,12 +104,12 @@ public class GameManager : MonoBehaviour
     }
 
     // Randomly determines the AI's choice
-    Choice GetAIChoice(Choice playerChoice, bool blatantRigging)
+    Choice GetAIChoice(Choice playerChoice)
     {
         Choice aiChoice;
-        if(blatantRigging)
+        if(activeRigging)
         {
-            aiChoice = CounterPick(playerChoice);
+            aiChoice = CounterPick(playerChoice, aiIntention);
         }
         else
         {
