@@ -1,0 +1,65 @@
+using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
+using TMPro;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class AIManager : MonoBehaviour
+{
+    [SerializeField] private TextMeshProUGUI aiCommentaryText;
+
+    private const string API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+    private const string API_KEY = "AIzaSyBF_Om4mTSIo5DLaaTrQWGvy0iqVhgcT5g";
+
+    public void GenerateAICommentary(string playerChoice, string aiChoice)
+    {
+        string prompt = $"Imagine that you are narrating a game of rock-paper-scissors between a human and an AI. The player has just chosen {playerChoice} and the AI chose {aiChoice}. Provide a response of about 40 words to the human player's choice, from the perspective of the human player's AI opponent. Acknowledge defeat if and only if you actually lost.";
+
+        StartCoroutine(SendRequestToGemini(prompt));
+    }
+
+    private IEnumerator SendRequestToGemini(string prompt)
+    {
+        // Construct the JSON request body
+        string jsonData = $"{{\"contents\": [{{\"parts\": [{{\"text\": \"{prompt}\"}}]}}]}}";
+
+        using (UnityWebRequest request = new UnityWebRequest($"{API_URL}?key={API_KEY}", "POST"))
+        {
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string response = request.downloadHandler.text;
+                Debug.Log("Gemini API Response: " + response);
+
+                string commentary = ExtractCommentaryFromResponse(response);
+                aiCommentaryText.text = commentary;
+            }
+            else
+            {
+                Debug.LogError("API Error: " + request.error);
+                aiCommentaryText.text = "Error fetching AI commentary.";
+            }
+        }
+    }
+
+    private string ExtractCommentaryFromResponse(string response)
+{
+    try
+    {
+        JObject json = JObject.Parse(response);
+        return json["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString() ?? "I've got you this next time!";
+    }
+    catch (System.Exception e)
+    {
+        Debug.LogError("Error parsing AI response: " + e.Message);
+        return "Error retrieving AI commentary.";
+    }
+}
+}
