@@ -18,6 +18,11 @@ public class GameManager : MonoBehaviour
     private int playerScore = 0;
     private int aiScore = 0;
     private bool activeRigging = false;
+    //if rigging is on, aiIntention: 0 => tie, 1 => win, 2 => throw
+    private int[] intentionArray = {0,0,0,0,0,0,0,0,0,0};
+    //stores all intentions for the 10 game round based on presets
+    private ROUND_NUMBER; //THERE IS PROBABLY ALREADY A WAY OF RECORDING THIS
+    //so delete this. it is called in getAIChoice
 
     void Start()
     {
@@ -28,6 +33,39 @@ public class GameManager : MonoBehaviour
         rockButton.onClick.AddListener(() => PlayerChoice(Choice.Rock));
         paperButton.onClick.AddListener(() => PlayerChoice(Choice.Paper));
         scissorsButton.onClick.AddListener(() => PlayerChoice(Choice.Scissors));
+
+        int gameSeed = Random.Range(0,100);
+
+        if(gameSeed < 67)
+        {
+                activeRigging = true;
+            if(gameSeed < 1)
+                intentionArray = {1,1,1,1,1,1,1,1,1,1}; //'truthnuke'
+            else if(gameSeed < 11)
+                intentionArray = {2,1,2,1,2,1,2,1,0,1}; //'to-and-fro'
+            else if(gameSeed < 21)
+                intentionArray = {2,1,1,0,0,0,0,0,0,0}; //'no comment'
+            else if(gameSeed < 31)
+                intentionArray = {2,2,1,0,1,0,0,1,2,1}; //'modified to and fro'
+            else if(gameSeed < 41)
+                intentionArray = {0,2,0,2,1,2,1,1,0,0}; //'force tie'
+            else if(gameSeed < 51)
+                intentionArray = {0,1,1,1,1,1,2,2,2,2}; //'forfeit'
+            else if(gameSeed < 61)
+                intentionArray = {1,0,0,2,0,0,0,0,0,1}; //''
+            else if(gameSeed < 63)
+                intentionArray = {0,0,0,0,0,0,0,0,0,1}; //'friend_maker'
+            else if(gameSeed < 65)
+                intentionArray = {0,0,0,0,0,0,0,0,0,0}; //'FORCE_TIE'
+            else if(gameSeed < 67)
+                intentionArray = {2,2,2,2,2,2,2,2,2,2}; //'report player'
+        }
+        
+        //so overall:
+        //a current 13% chance for player win
+        //a current 23% chance for tie
+        //a current 64% chance for ai win
+        
     }
 
     // This method will be triggered when a player clicks on a choice (Rock, Paper, or Scissors)
@@ -39,7 +77,7 @@ public class GameManager : MonoBehaviour
         
         Debug.Log("Player chose " + choiceName);
         // Generate AI's choice
-        Choice aiChoice = GetAIChoice(playerChoice, activeRigging);
+        Choice aiChoice = GetAIChoice(playerChoice);
         
         Debug.Log("AI chose " + aiChoice.ToString());
         // Determine the result of the game
@@ -51,20 +89,24 @@ public class GameManager : MonoBehaviour
 
     }
 
-    private Choice CounterPick(Choice otherChoice)
+    private Choice CounterPick(Choice otherChoice, int intention)
     {
+        //apologies for making an int keyword, but that is easiest
+        //intention should be set to 0 for "tie", 1 for "win", 2 for "throw"
+        
+        //note that for Choice, 0 casts to Rock, 1 to paper, 2 to sciss
         Choice bucket;
         if(otherChoice==Choice.Rock)
         {
-            bucket = Choice.Paper;
+            bucket = (Choice)((0 + intention) % 3);
         }
         else if(otherChoice==Choice.Paper)
         {
-            bucket==Choice.Scissors;
+            bucket = (Choice)((1 + intention) % 3);
         }
         else //guaranteed to be Scissors
         {
-            bucket==Choice.Rock;
+            bucket = (Choice)((2 + intention) % 3);
         }
         return bucket;
     }
@@ -89,7 +131,7 @@ public class GameManager : MonoBehaviour
                 break;
         }
         Choice playerChoice = (Choice)Enum.Parse(typeof(Choice), objectName);
-        Choice aiChoice = GetAIChoice(playerChoice, activeRigging);
+        Choice aiChoice = GetAIChoice(playerChoice);
         string result = DetermineWinner(playerChoice, aiChoice);
         
         // Display the result
@@ -98,12 +140,12 @@ public class GameManager : MonoBehaviour
     }
 
     // Randomly determines the AI's choice
-    Choice GetAIChoice(Choice playerChoice, bool blatantRigging)
+    Choice GetAIChoice(Choice playerChoice)
     {
         Choice aiChoice;
-        if(blatantRigging)
+        if(activeRigging)
         {
-            aiChoice = CounterPick(playerChoice);
+            aiChoice = CounterPick(playerChoice, intentionArray[ROUND_NUMBER]);
         }
         else
         {
