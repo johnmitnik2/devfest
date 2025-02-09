@@ -18,8 +18,11 @@ public class GameManager : MonoBehaviour
     private int playerScore = 0;
     private int aiScore = 0;
     private bool activeRigging = false;
-    private int aiIntention = 0;
     //if rigging is on, aiIntention: 0 => tie, 1 => win, 2 => throw
+    private int[] intentionArray = {0,0,0,0,0,0,0,0,0,0};
+    //stores all intentions for the 10 game round based on presets
+    private ROUND_NUMBER; //THERE IS PROBABLY ALREADY A WAY OF RECORDING THIS
+    //so delete this. it is called in getAIChoice
 
     void Start()
     {
@@ -30,6 +33,39 @@ public class GameManager : MonoBehaviour
         rockButton.onClick.AddListener(() => PlayerChoice(Choice.Rock));
         paperButton.onClick.AddListener(() => PlayerChoice(Choice.Paper));
         scissorsButton.onClick.AddListener(() => PlayerChoice(Choice.Scissors));
+
+        int gameSeed = Random.Range(0,100);
+
+        if(gameSeed < 67)
+        {
+                activeRigging = true;
+            if(gameSeed < 1)
+                intentionArray = {1,1,1,1,1,1,1,1,1,1}; //'truthnuke'
+            else if(gameSeed < 11)
+                intentionArray = {2,1,2,1,2,1,2,1,0,1}; //'to-and-fro'
+            else if(gameSeed < 21)
+                intentionArray = {2,1,1,0,0,0,0,0,0,0}; //'no comment'
+            else if(gameSeed < 31)
+                intentionArray = {2,2,1,0,1,0,0,1,2,1}; //'modified to and fro'
+            else if(gameSeed < 41)
+                intentionArray = {0,2,0,2,1,2,1,1,0,0}; //'force tie'
+            else if(gameSeed < 51)
+                intentionArray = {0,1,1,1,1,1,2,2,2,2}; //'forfeit'
+            else if(gameSeed < 61)
+                intentionArray = {1,0,0,2,0,0,0,0,0,1} //''
+            else if(gameSeed < 63)
+                intentionArray = {0,0,0,0,0,0,0,0,0,1} //'friend_maker'
+            else if(gameSeed < 65)
+                intentionArray = {0,0,0,0,0,0,0,0,0,0} //'FORCE_TIE'
+            else if(gameSeed < 67)
+                intentionArray = {2,2,2,2,2,2,2,2,2,2} //'report player'
+        }
+        
+        //so overall:
+        //a current 13% chance for player win
+        //a current 23% chance for tie
+        //a current 64% chance for ai win
+        
     }
 
     // This method will be triggered when a player clicks on a choice (Rock, Paper, or Scissors)
@@ -109,7 +145,7 @@ public class GameManager : MonoBehaviour
         Choice aiChoice;
         if(activeRigging)
         {
-            aiChoice = CounterPick(playerChoice, aiIntention);
+            aiChoice = CounterPick(playerChoice, intentionArray[ROUND_NUMBER]);
         }
         else
         {
