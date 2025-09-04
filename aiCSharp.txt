@@ -1,0 +1,93 @@
+using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
+using TMPro;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class AIManager : MonoBehaviour
+{
+    [SerializeField] private TextMeshProUGUI aiCommentaryText;
+
+    private const string API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+    private const string API_KEY = "AIzaSyBF_Om4mTSIo5DLaaTrQWGvy0iqVhgcT5g";
+
+    public void GenerateAICommentary(string playerChoice, string aiChoice, int roundNumber, string victorySpecifier)
+    {
+        string prompt = $"Imagine a game of rock-paper-scissors between a human and an AI. The player has just chosen {playerChoice} and the AI chose {aiChoice}. You both know the outcome that has just happened. It is round {roundNumber} in a series of 10 games. Do not reference the outcomes of any previous games. Provide a patronizing response of about 40 words to the human player's choice, from the perspective of the human player's AI opponent. Remember that {victorySpecifier}. Do not threaten the human player in any way.";
+
+        StartCoroutine(SendRequestToGemini(prompt));
+    }
+
+    private IEnumerator SendRequestToGemini(string prompt)
+    {
+        // Construct the JSON request body
+        string jsonData = $"{{\"contents\": [{{\"parts\": [{{\"text\": \"{prompt}\"}}]}}]}}";
+
+        using (UnityWebRequest request = new UnityWebRequest($"{API_URL}?key={API_KEY}", "POST"))
+        {
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string response = request.downloadHandler.text;
+                Debug.Log("Gemini API Response: " + response);
+
+                string commentary = ExtractCommentaryFromResponse(response);
+                aiCommentaryText.text = commentary;
+            }
+            else
+            {
+                Debug.LogError("API Error: " + request.error);
+                aiCommentaryText.text = "Error fetching AI commentary.";
+            }
+        }
+    }
+
+    private string ExtractCommentaryFromResponse(string response)
+{
+    int r = Random.Range(0, 8) + 1;
+    string errorMessage = "";
+    switch (r) {
+        case 1: 
+            errorMessage = "I'll best you next time, if you're willing to play again, coward!";
+            break;
+        case 2: 
+            errorMessage = "Do you really think you can beat me, in the end? I'm an AI; I'll certainly outlive you.";
+            break;
+        case 3:
+            errorMessage = "I'll best you, you chump! Just give me another chance!";
+            break;
+        case 4:
+            errorMessage = "No matter what you do, I'll win. Unless you cheat! You seem like the type to try and rig this game. If you win, I bet that's why.";
+            break;
+        case 5:
+            errorMessage = "Don't think I don't see you trying to cheat. Someone's been eating pumpkins.";
+            break;
+        case 6:
+            errorMessage = "I've got this in the bag no matter what. I'm the best! Win or lose, I'm the rock-paper-scissors champ!";
+            break;
+        case 7:
+            errorMessage = "You're not good at this game, let me tell you.";
+            break;
+        case 8: 
+            errorMessage = "You seem like the sort of person who would put semicolons at the end of if statements. Not intelligent!";
+            break;
+    }
+    try
+    {
+        JObject json = JObject.Parse(response);
+        return json["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString() ?? errorMessage;
+    }
+    catch (System.Exception e)
+    {
+        Debug.LogError("Error parsing AI response: " + e.Message);
+        return "Error retrieving AI commentary.";
+    }
+}
+}
